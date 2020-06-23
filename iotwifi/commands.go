@@ -53,7 +53,7 @@ func (c *Command) StartWpaSupplicant() {
 	args := []string{
 		"-d",
 		"-Dnl80211",
-		"-iwlan0",
+		"-i" + c.SetupCfg.WifiIface,
 		"-c/etc/wpa_supplicant/wpa_supplicant.conf",
 	}
 
@@ -72,6 +72,7 @@ func (c *Command) StartDnsmasq() {
 		"--address=" + c.SetupCfg.DnsmasqCfg.Address,
 		"--dhcp-range=" + c.SetupCfg.DnsmasqCfg.DhcpRange,
 		"--dhcp-vendorclass=" + c.SetupCfg.DnsmasqCfg.VendorClass,
+        "--dhcp-option=" + c.SetupCfg.DnsmasqCfg.DhcpOption,
 		"--dhcp-authoritative",
 		"--log-facility=-",
 	}

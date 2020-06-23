@@ -127,7 +127,7 @@ rsn_pairwise=CCMP`
 
 // ConfiguredNetworks returns a list of configured wifi networks.
 func (wpa *WpaCfg) ConfiguredNetworks() string {
-	netOut, err := exec.Command("wpa_cli", "-i", "wlan0", "scan").Output()
+	netOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "scan").Output()
 	if err != nil {
 		wpa.Log.Fatal(err)
 	}
@@ -140,7 +140,7 @@ func (wpa *WpaCfg) ConnectNetwork(creds WpaCredentials) (WpaConnection, error) {
 	connection := WpaConnection{}
 
 	// 1. Add a network
-	addNetOut, err := exec.Command("wpa_cli", "-i", "wlan0", "add_network").Output()
+	addNetOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "add_network").Output()
 	if err != nil {
 		wpa.Log.Fatal(err)
 		return connection, err
@@ -149,7 +149,7 @@ func (wpa *WpaCfg) ConnectNetwork(creds WpaCredentials) (WpaConnection, error) {
 	wpa.Log.Info("WPA add network got: %s", net)
 
 	// 2. Set the ssid for the new network
-	addSsidOut, err := exec.Command("wpa_cli", "-i", "wlan0", "set_network", net, "ssid", "\""+creds.Ssid+"\"").Output()
+	addSsidOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "set_network", net, "ssid", "\""+creds.Ssid+"\"").Output()
 	if err != nil {
 		wpa.Log.Fatal(err)
 		return connection, err
@@ -158,7 +158,7 @@ func (wpa *WpaCfg) ConnectNetwork(creds WpaCredentials) (WpaConnection, error) {
 	wpa.Log.Info("WPA add ssid got: %s", ssidStatus)
 
 	// 3. Set the psk for the new network
-	addPskOut, err := exec.Command("wpa_cli", "-i", "wlan0", "set_network", net, "psk", "\""+creds.Psk+"\"").Output()
+	addPskOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "set_network", net, "psk", "\""+creds.Psk+"\"").Output()
 	if err != nil {
 		wpa.Log.Fatal(err.Error())
 		return connection, err
@@ -167,7 +167,7 @@ func (wpa *WpaCfg) ConnectNetwork(creds WpaCredentials) (WpaConnection, error) {
 	wpa.Log.Info("WPA psk got: %s", pskStatus)
 
 	// 4. Enable the new network
-	enableOut, err := exec.Command("wpa_cli", "-i", "wlan0", "enable_network", net).Output()
+	enableOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "enable_network", net).Output()
 	if err != nil {
 		wpa.Log.Fatal(err.Error())
 		return connection, err
@@ -182,7 +182,7 @@ func (wpa *WpaCfg) ConnectNetwork(creds WpaCredentials) (WpaConnection, error) {
 	for i := 0; i < 5; i++ {
 		wpa.Log.Info("WPA Checking wifi state")
 
-		stateOut, err := exec.Command("wpa_cli", "-i", "wlan0", "status").Output()
+		stateOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "status").Output()
 		if err != nil {
 			wpa.Log.Fatal("Got error checking state: %s", err.Error())
 			return connection, err
@@ -195,7 +195,7 @@ func (wpa *WpaCfg) ConnectNetwork(creds WpaCredentials) (WpaConnection, error) {
 			// see https://developer.android.com/reference/android/net/wifi/SupplicantState.html
 			if state == "COMPLETED" {
 				// save the config
-				saveOut, err := exec.Command("wpa_cli", "-i", "wlan0", "save_config").Output()
+				saveOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "save_config").Output()
 				if err != nil {
 					wpa.Log.Fatal(err.Error())
 					return connection, err
@@ -222,7 +222,7 @@ func (wpa *WpaCfg) ConnectNetwork(creds WpaCredentials) (WpaConnection, error) {
 func (wpa *WpaCfg) Status() (map[string]string, error) {
 	cfgMap := make(map[string]string, 0)
 
-	stateOut, err := exec.Command("wpa_cli", "-i", "wlan0", "status").Output()
+	stateOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "status").Output()
 	if err != nil {
 		wpa.Log.Fatal("Got error checking state: %s", err.Error())
 		return cfgMap, err
@@ -253,7 +253,7 @@ func cfgMapper(data []byte) map[string]string {
 func (wpa *WpaCfg) ScanNetworks() (map[string]WpaNetwork, error) {
 	wpaNetworks := make(map[string]WpaNetwork, 0)
 
-	scanOut, err := exec.Command("wpa_cli", "-i", "wlan0", "scan").Output()
+	scanOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "scan").Output()
 	if err != nil {
 		wpa.Log.Fatal(err)
 		return wpaNetworks, err
@@ -264,7 +264,7 @@ func (wpa *WpaCfg) ScanNetworks() (map[string]WpaNetwork, error) {
 	time.Sleep(1 * time.Second)
 
 	if scanOutClean == "OK" {
-		networkListOut, err := exec.Command("wpa_cli", "-i", "wlan0", "scan_results").Output()
+		networkListOut, err := exec.Command("wpa_cli", "-i", wpa.WpaCfg.WifiIface, "scan_results").Output()
 		if err != nil {
 			wpa.Log.Fatal(err)
 			return wpaNetworks, err
